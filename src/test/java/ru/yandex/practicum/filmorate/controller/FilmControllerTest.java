@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -15,12 +19,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
 
     private FilmController filmController;
+    private FilmStorage filmStorage;
+    private FilmService filmService;
+    private UserService userService;
     private Map<Integer, Film> films;
 
     @BeforeEach
     public void setUp() {
         films = new HashMap<>();
-        filmController = new FilmController();
+        userService = new UserService();
+        filmService = new FilmService(userService);
+        filmStorage = new InMemoryFilmStorage(filmService);
+        filmController = new FilmController(filmStorage, filmService);
     }
 
     @Test
