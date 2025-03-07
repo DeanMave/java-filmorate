@@ -4,25 +4,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
-    private final Map<Integer, Film> films = new HashMap<>();
     private final UserService userService;
+    private final InMemoryFilmStorage filmStorage;
 
-    public FilmService(UserService userService) {
+    public FilmService(UserService userService, InMemoryFilmStorage filmStorage) {
         this.userService = userService;
+        this.filmStorage = filmStorage;
     }
 
     public void addLike(Integer filmId, Integer userId) {
-        Film film = films.get(filmId);
+        Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             throw new NotFoundException("Такого фильма не существует");
         }
@@ -38,7 +38,7 @@ public class FilmService {
     }
 
     public void deleteLike(Integer filmId, Integer userId) {
-        Film film = films.get(filmId);
+        Film film = filmStorage.getFilmById(filmId);
         if (film == null) {
             throw new NotFoundException("Такого фильма не существует");
         }
@@ -54,13 +54,13 @@ public class FilmService {
     }
 
     public List<Film> mostPopularFilms(int size) {
-        return films.values().stream()
+        return filmStorage.getAllFilms().stream()
                 .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
                 .limit(size)
                 .collect(Collectors.toList());
     }
 
     public void addFilm(Film film) {
-        films.put(film.getId(), film);
+        filmStorage.saveFilm(film);
     }
 }
