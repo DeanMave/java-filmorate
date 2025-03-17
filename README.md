@@ -35,6 +35,7 @@ SELECT u.*
 FROM user u
 
 WHERE u.user_id IN (
+
     SELECT f1.friend_id
     
     FROM friendship f1
