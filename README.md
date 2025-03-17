@@ -8,7 +8,7 @@ SELECT *
 
 FROM film;
 
-Запрос на получение топа фильмов:
+Запрос на получение топа фильмов с лимитом 10:
 
 SELECT f.*,COUNT(l.user_id) AS likes_film
 
@@ -35,7 +35,6 @@ SELECT u.*
 FROM user u
 
 WHERE u.user_id IN (
-
     SELECT f1.friend_id
     
     FROM friendship f1
@@ -49,6 +48,5 @@ WHERE u.user_id IN (
     AND f1.status = 'confirmed'
     
     AND f2.status = 'confirmed'
-    
 )
 
