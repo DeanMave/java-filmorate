@@ -28,6 +28,11 @@ public class FilmController {
         return filmService.mostPopularFilms(count);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Integer id){
+        return filmService.getFilmByIdOrThrow(id);
+    }
+
     @GetMapping
     public Collection<Film> getAllFilms() {
         return filmStorage.getAllFilms();

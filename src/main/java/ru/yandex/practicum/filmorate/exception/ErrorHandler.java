@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -30,5 +31,12 @@ public class ErrorHandler {
     public Map<String, String> handleRuntimeException(final RuntimeException e) {
         log.error("Внутренняя ошибка сервера: {}", e.getMessage(), e);
         return Map.of("error", "Возникло исключение.", "message", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.error("Ошибка внешнего ключа или ограничения целостности: {}", e.getMessage(), e);
+        return Map.of("error", "Ошибка базы данных.", "message", e.getMessage());
     }
 }
