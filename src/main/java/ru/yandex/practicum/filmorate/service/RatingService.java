@@ -20,7 +20,7 @@ public class RatingService {
     }
 
     public Rating getRatingById(Integer id) {
-        return ratingStorage.getRatingById(id).
-                orElseThrow(() -> new NotFoundException("Рейтинг с ID " + id + " не найден"));
+        return ratingStorage.getRatingById(id)
+                .orElseThrow(() -> new NotFoundException("Рейтинг с ID " + id + " не найден"));
     }
 }
