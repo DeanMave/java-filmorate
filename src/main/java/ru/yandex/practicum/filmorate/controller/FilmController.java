@@ -29,7 +29,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Integer id){
+    public Film getFilmById(@PathVariable Integer id) {
         return filmService.getFilmByIdOrThrow(id);
     }
 
