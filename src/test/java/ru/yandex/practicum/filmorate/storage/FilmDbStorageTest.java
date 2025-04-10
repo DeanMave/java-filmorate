@@ -184,4 +184,65 @@ class FilmDbStorageTest {
                 .containsExactly(film1.getId(), film2.getId());
     }
 
+    @Test
+    void getCommonFilmsWithFriend() {
+        User user1 = new User();
+        user1.setName("User1");
+        user1.setLogin("login1");
+        user1.setEmail("u1@mail.com");
+        user1.setBirthday(LocalDate.of(1990, 1, 1));
+        user1 = userDbStorage.create(user1);
+
+        User user2 = new User();
+        user2.setName("User2");
+        user2.setLogin("login2");
+        user2.setEmail("u2@mail.com");
+        user2.setBirthday(LocalDate.of(1991, 2, 2));
+        user2 = userDbStorage.create(user2);
+
+        Film film1 = new Film();
+        film1.setName("Film 1");
+        film1.setDescription("Description 1");
+        film1.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film1.setDuration(100);
+        Rating rating1 = new Rating();
+        rating1.setId(1);
+        film1.setRating(rating1);
+        film1 = filmDbStorage.addNewFilm(film1);
+
+        Film film2 = new Film();
+        film2.setName("Film 2");
+        film2.setDescription("Description 2");
+        film2.setReleaseDate(LocalDate.of(2001, 2, 2));
+        film2.setDuration(120);
+        Rating rating2 = new Rating();
+        rating2.setId(1);
+        film2.setRating(rating2);
+        film2 = filmDbStorage.addNewFilm(film2);
+
+        Film film3 = new Film();
+        film3.setName("Film 3");
+        film3.setDescription("Description 3");
+        film3.setReleaseDate(LocalDate.of(2002, 3, 3));
+        film3.setDuration(100);
+        Rating rating3 = new Rating();
+        rating3.setId(1);
+        film3.setRating(rating3);
+        film3 = filmDbStorage.addNewFilm(film3);
+
+        filmDbStorage.addLike(film1.getId(), user1.getId());
+        filmDbStorage.addLike(film1.getId(), user2.getId());
+        filmDbStorage.addLike(film2.getId(), user1.getId());
+        filmDbStorage.addLike(film3.getId(), user2.getId());
+
+        List<Film> popular = filmDbStorage.getCommonFilmsWithFriend(user1.getId(), user2.getId());
+
+        assertThat(popular)
+                .hasSizeGreaterThanOrEqualTo(1)
+                .extracting(Film::getId)
+                .containsExactly(film1.getId())
+                .doesNotContain(film2.getId())
+                .doesNotContain(film3.getId());
+    }
+
 }
