@@ -46,4 +46,17 @@ public class FilmService {
         return filmStorage.findById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с ID " + filmId + " не найден"));
     }
+
+    public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId) {
+        userService.findUser(userId);
+        userService.findUser(friendId);
+        if (userService.findUser(userId) == null) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        if (userService.findUser(friendId) == null) {
+            throw new NotFoundException("Друг пользователя не найден");
+        }
+        return filmStorage.getCommonFilmsWithFriend(userId, friendId);
+    }
+
 }

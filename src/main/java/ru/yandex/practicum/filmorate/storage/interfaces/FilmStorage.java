@@ -25,4 +25,6 @@ public interface FilmStorage {
     Set<Integer> getLikesByFilmId(Integer filmId);
 
     Set<Genre> getGenresByFilmId(Integer filmId);
+
+    public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId);
 }
