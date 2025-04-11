@@ -35,8 +35,10 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк у фильма {}", userId, film.getName());
     }
 
-    public List<Film> mostPopularFilms(int size) {
+    public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
         return filmStorage.getAllFilms().stream()
+                .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId().equals(genreId)))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
                 .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
                 .limit(size)
                 .collect(Collectors.toList());
