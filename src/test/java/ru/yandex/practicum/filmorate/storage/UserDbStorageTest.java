@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 
@@ -17,11 +19,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@Import({UserDbStorage.class, UserRowMapper.class})
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Import(UserDbStorageTest.UserDbStorageTestConfig.class)
 class UserDbStorageTest {
 
-    private final UserDbStorage userDbStorage;
+    @Autowired
+    private UserDbStorage userDbStorage;
+
+    @TestConfiguration
+    static class UserDbStorageTestConfig {
+
+        @Bean
+        public UserRowMapper userRowMapper() {
+            return new UserRowMapper();
+        }
+
+        @Bean
+        public UserDbStorage userDbStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
+            return new UserDbStorage(jdbcTemplate, userRowMapper);
+        }
+    }
 
     @Test
     void testCreateAndFindUserById() {
@@ -68,7 +84,6 @@ class UserDbStorageTest {
                     assertThat(u.getEmail()).isEqualTo("new@mail.com");
                 });
     }
-
 
     @Test
     void testAddAndFindFriends() {
@@ -125,5 +140,4 @@ class UserDbStorageTest {
                 .first()
                 .hasFieldOrPropertyWithValue("id", common.getId());
     }
-
 }

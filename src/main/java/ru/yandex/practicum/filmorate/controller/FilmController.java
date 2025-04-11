@@ -40,6 +40,12 @@ public class FilmController {
         return filmStorage.getAllFilms();
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getAllFilmsByDirector(@PathVariable Integer directorId,
+                                                  @RequestParam(required = false) String sortBy) {
+        return filmService.getAllFilmsByDirector(directorId, sortBy);
+    }
+
     @PostMapping
     public Film addNewFilm(@Valid @RequestBody Film film) {
         return filmStorage.addNewFilm(film);
