@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
@@ -22,11 +25,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@Import({UserDbStorage.class, FilmDbStorage.class, FilmRowMapper.class, GenreRowMapper.class, UserRowMapper.class})
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Import(FilmDbStorageTest.FilmDbStorageTestConfig.class)
 class FilmDbStorageTest {
-    private final FilmDbStorage filmDbStorage;
-    private final UserDbStorage userDbStorage;
+
+    @Autowired
+    private FilmDbStorage filmDbStorage;
+
+    @Autowired
+    private UserDbStorage userDbStorage;
+
+    @TestConfiguration
+    static class FilmDbStorageTestConfig {
+
+        @Bean
+        public FilmRowMapper filmRowMapper() {
+            return new FilmRowMapper();
+        }
+
+        @Bean
+        public GenreRowMapper genreRowMapper() {
+            return new GenreRowMapper();
+        }
+
+        @Bean
+        public DirectorRowMapper directorRowMapper() {
+            return new DirectorRowMapper();
+        }
+
+        @Bean
+        public FilmDbStorage filmDbStorage(JdbcTemplate jdbcTemplate,
+                                           FilmRowMapper filmRowMapper,
+                                           GenreRowMapper genreRowMapper,
+                                           DirectorRowMapper directorRowMapper) {
+            return new FilmDbStorage(jdbcTemplate, filmRowMapper, genreRowMapper, directorRowMapper);
+        }
+
+        @Bean
+        public UserRowMapper userRowMapper() {
+            return new UserRowMapper();
+        }
+
+        @Bean
+        public UserDbStorage userDbStorage(JdbcTemplate jdbcTemplate, UserRowMapper userRowMapper) {
+            return new UserDbStorage(jdbcTemplate, userRowMapper);
+        }
+    }
 
     @Test
     void testCreateAndFindFilmById() {

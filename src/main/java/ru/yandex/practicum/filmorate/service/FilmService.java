@@ -21,6 +21,16 @@ public class FilmService {
         this.filmStorage = filmStorage;
     }
 
+    public List<Film> getAllFilmsByDirector(Integer directorId, String sortBy) {
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
+        } else if ("year".equalsIgnoreCase(sortBy)) {
+            return filmStorage.getFilmsByDirectorSortedByYears(directorId);
+        } else {
+            throw new IllegalArgumentException("Некорректный параметр сортировки: " + sortBy);
+        }
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = getFilmByIdOrThrow(filmId);
         userService.findUser(userId);
