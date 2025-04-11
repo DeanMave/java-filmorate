@@ -215,4 +215,26 @@ public class FilmDbStorage implements FilmStorage {
     public Set<Genre> getGenresByFilmId(Integer filmId) {
         return new HashSet<>(jdbcTemplate.query(FIND_GENRES_FILM_BY_ID, genreRowMapper, filmId));
     }
+
+    @Override
+    public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId) {
+        String sql = """
+            SELECT f.*, r.rating_name
+            FROM likes l1
+            JOIN likes l2 ON l1.film_id = l2.film_id
+            JOIN film f ON l1.film_id = f.film_id
+            LEFT JOIN rating r ON f.rating_id = r.rating_id
+            WHERE l1.user_id = ? AND l2.user_id = ?
+            """;
+
+        List<Film> commonFilms = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+
+        //жанры и лайки для общих фильмов
+        for (Film film : commonFilms) {
+            film.setLikes(getLikesByFilmId(film.getId()));
+            film.setGenres(getGenresByFilmId(film.getId()));
+        }
+
+        return commonFilms;
+    }
 }
