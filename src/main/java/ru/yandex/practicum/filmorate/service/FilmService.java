@@ -48,6 +48,7 @@ public class FilmService {
     public void deleteFilmById(Integer filmId) {
         getFilmByIdOrThrow(filmId);
         filmStorage.deleteFilmById(filmId);
+        log.info("Фильм {} удален", filmId);
     }
 
     public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
