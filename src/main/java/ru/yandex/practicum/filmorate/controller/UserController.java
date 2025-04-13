@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
@@ -14,10 +16,12 @@ import java.util.List;
 public class UserController {
     private final UserDbStorage userStorage;
     private final UserService userService;
+    private final RecommendationService recommendationService;
 
-    public UserController(UserDbStorage userStorage, UserService userService) {
+    public UserController(UserDbStorage userStorage, UserService userService, RecommendationService recommendationService) {
         this.userStorage = userStorage;
         this.userService = userService;
+        this.recommendationService = recommendationService;
     }
 
     @GetMapping("/{id}/friends")
@@ -53,5 +57,10 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Integer userId) {
+        return recommendationService.getRecommendedFilms(userId);
     }
 }
