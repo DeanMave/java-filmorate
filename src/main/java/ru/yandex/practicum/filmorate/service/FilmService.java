@@ -21,6 +21,16 @@ public class FilmService {
         this.filmStorage = filmStorage;
     }
 
+    public List<Film> getAllFilmsByDirector(Integer directorId, String sortBy) {
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            return filmStorage.getFilmsByDirectorSortedByLikes(directorId);
+        } else if ("year".equalsIgnoreCase(sortBy)) {
+            return filmStorage.getFilmsByDirectorSortedByYears(directorId);
+        } else {
+            throw new IllegalArgumentException("Некорректный параметр сортировки: " + sortBy);
+        }
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = getFilmByIdOrThrow(filmId);
         userService.findUser(userId);
@@ -35,8 +45,10 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк у фильма {}", userId, film.getName());
     }
 
-    public List<Film> mostPopularFilms(int size) {
+    public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
         return filmStorage.getAllFilms().stream()
+                .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId().equals(genreId)))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
                 .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
                 .limit(size)
                 .collect(Collectors.toList());
