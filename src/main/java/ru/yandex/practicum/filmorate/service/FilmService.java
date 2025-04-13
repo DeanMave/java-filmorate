@@ -47,9 +47,6 @@ public class FilmService {
 
     public void deleteFilmById(Integer filmId) {
         getFilmByIdOrThrow(filmId);
-        if (filmStorage.getAllFilms().isEmpty()) {
-            throw new NotFoundException("Фильмы не найдены. Добавьте фильмы");
-        }
         filmStorage.deleteFilmById(filmId);
     }
 
