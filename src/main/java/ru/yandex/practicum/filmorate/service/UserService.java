@@ -58,5 +58,6 @@ public class UserService {
         userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
         userStorage.deleteUserById(userId);
+        log.info("Пользователь {} удалён", userId);
     }
 }
