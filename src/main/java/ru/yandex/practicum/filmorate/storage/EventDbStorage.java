@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.mappers;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.interfaces.EventStorage;
+import ru.yandex.practicum.filmorate.storage.mappers.EventRowMapper;
 
-import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +19,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final EventRowMapper eventRowMapper;
 
     public void addEvent(EventType eventType, Operation operation, Integer userId, Integer entityId) {
         long timestamp = Instant.now().toEpochMilli();
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("EVENT")
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("event")
                 .usingGeneratedKeyColumns("event_id");
 
         simpleJdbcInsert.execute(Map.of("timestamp", timestamp,
@@ -33,20 +34,8 @@ public class EventDbStorage implements EventStorage {
     }
 
     public List<Event> getEventFeed(Integer userId) {
-        String sql = "SELECT * FROM EVENT WHERE user_id = ?" +
-                "ORDER BY timestamp";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeEvent(rs), userId);
+        String sql = "SELECT * FROM event WHERE user_id = ? ORDER BY timestamp";
+        return jdbcTemplate.query(sql, eventRowMapper, userId);
     }
 
-    @SneakyThrows
-    private Event makeEvent(ResultSet rs) {
-        return Event.builder()
-                .eventId(rs.getLong("event_id"))
-                .timestamp(rs.getLong("timestamp"))
-                .userId(rs.getLong("user_id"))
-                .eventType(EventType.valueOf(rs.getString("eventType")))
-                .operation(Operation.valueOf(rs.getString("operation")))
-                .entityId(rs.getLong("entity_id"))
-                .build();
-    }
 }

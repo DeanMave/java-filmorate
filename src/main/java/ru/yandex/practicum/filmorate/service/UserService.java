@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
-import ru.yandex.practicum.filmorate.storage.mappers.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.EventDbStorage;
 
 import java.util.*;
 

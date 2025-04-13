@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.mappers.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.EventDbStorage;
 
 import java.util.Comparator;
 import java.util.List;
