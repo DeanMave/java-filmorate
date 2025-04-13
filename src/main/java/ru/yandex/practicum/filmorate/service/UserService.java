@@ -4,7 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
+
+import ru.yandex.practicum.filmorate.storage.mappers.EventDbStorage;
 
 import java.util.*;
 
@@ -12,9 +17,11 @@ import java.util.*;
 @Service
 public class UserService {
     private final UserDbStorage userStorage;
+    private final EventDbStorage eventDbStorage;
 
-    public UserService(UserDbStorage userStorage) {
+    public UserService(UserDbStorage userStorage, EventDbStorage eventDbStorage) {
         this.userStorage = userStorage;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public void addFriend(Integer userId, Integer friendId) {
@@ -24,7 +31,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + friendId + " не найден."));
 
         userStorage.addFriend(userId, friendId);
-
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.ADD, userId, friendId);
         log.info("Пользователь {} добавил в друзья пользователя {}", userId, friendId);
     }
 
@@ -35,7 +42,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + friendId + " не найден."));
 
         userStorage.removeFriend(userId, friendId);
-
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.REMOVE, userId, friendId);
         log.info("Пользователь {} удалил из друзей пользователя {}", userId, friendId);
     }
 
@@ -52,5 +59,11 @@ public class UserService {
     public User findUser(Integer userId) {
         return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
+    }
+
+    public List<Event> getEventFeed(Integer userId) {
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
+        return eventDbStorage.getEventFeed(user.getId());
     }
 }

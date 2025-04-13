@@ -4,7 +4,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.interfaces.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.mappers.EventDbStorage;
 
 import java.util.List;
 
@@ -13,17 +16,19 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserService userService;
     private final FilmService filmService;
+    private final EventDbStorage eventDbStorage;
 
-    public ReviewService(ReviewStorage reviewStorage, UserService userService, FilmService filmService) {
+    public ReviewService(ReviewStorage reviewStorage, UserService userService, FilmService filmService, EventDbStorage eventDbStorage) {
         this.reviewStorage = reviewStorage;
         this.userService = userService;
         this.filmService = filmService;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public Review addReview(Review review) {
         userService.findUser(review.getUserId());
         filmService.getFilmByIdOrThrow(review.getFilmId());
-
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.ADD, review.getUserId(), review.getReviewId());
         return reviewStorage.addReview(review);
     }
 
@@ -31,11 +36,13 @@ public class ReviewService {
         Review existing = getReviewOrThrow(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.UPDATE, review.getUserId(), review.getReviewId());
         return reviewStorage.updateReview(existing);
     }
 
     public void deleteReview(Integer id) {
-        getReviewOrThrow(id);
+        Review existing = getReviewOrThrow(id);
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.REMOVE, existing.getUserId(), existing.getReviewId());
         reviewStorage.deleteReview(id);
     }
 

@@ -4,7 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.mappers.EventDbStorage;
 
 import java.util.Comparator;
 import java.util.List;
@@ -15,10 +18,12 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final UserService userService;
     private final FilmDbStorage filmStorage;
+    private final EventDbStorage eventDbStorage;
 
-    public FilmService(UserService userService, FilmDbStorage filmStorage) {
+    public FilmService(UserService userService, FilmDbStorage filmStorage, EventDbStorage eventDbStorage) {
         this.userService = userService;
         this.filmStorage = filmStorage;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public List<Film> getAllFilmsByDirector(Integer directorId, String sortBy) {
@@ -36,6 +41,7 @@ public class FilmService {
         userService.findUser(userId);
         filmStorage.addLike(filmId, userId);
         log.info("Пользователь {} поставил лайк фильму {}", userId, film.getName());
+        eventDbStorage.addEvent(EventType.LIKE, Operation.ADD, userId, filmId);
     }
 
     public void deleteLike(Integer filmId, Integer userId) {
@@ -43,6 +49,7 @@ public class FilmService {
         userService.findUser(userId);
         filmStorage.deleteLike(filmId, userId);
         log.info("Пользователь {} убрал лайк у фильма {}", userId, film.getName());
+        eventDbStorage.addEvent(EventType.LIKE, Operation.REMOVE, userId, filmId);
     }
 
     public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
