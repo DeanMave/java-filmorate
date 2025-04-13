@@ -35,6 +35,11 @@ public class UserController {
         return userStorage.getAllUsers();
     }
 
+    @GetMapping("/{id}")
+    public User findUserById(@PathVariable Integer id) {
+        return userService.findUser(id);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userStorage.create(user);

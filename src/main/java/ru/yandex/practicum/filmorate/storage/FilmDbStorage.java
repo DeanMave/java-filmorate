@@ -375,7 +375,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(DELETE_FILM_GENRE, filmId);
         jdbcTemplate.update(DELETE_FILM_DIRECTOR, filmId);
         jdbcTemplate.update(DELETE, filmId);
-        findMostPopularFilms();
     }
 
     @Override
