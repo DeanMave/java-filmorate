@@ -167,7 +167,7 @@ class UserDbStorageTest {
         List<User> users = userDbStorage.getAllUsers();
 
         assertThat(users)
-                .hasSize(6)
+                .hasSize(3)
                 .extracting(User::getId)
                 .contains(user1.getId())
                 .contains(user2.getId())
@@ -177,7 +177,7 @@ class UserDbStorageTest {
         users = userDbStorage.getAllUsers();
 
         assertThat(users)
-                .hasSize(5)
+                .hasSize(2)
                 .extracting(User::getId)
                 .contains(user1.getId())
                 .contains(user2.getId())
