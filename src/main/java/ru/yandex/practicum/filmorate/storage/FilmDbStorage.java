@@ -219,22 +219,48 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId) {
         String sql = """
-            SELECT f.*, r.rating_name
-            FROM likes l1
-            JOIN likes l2 ON l1.film_id = l2.film_id
-            JOIN film f ON l1.film_id = f.film_id
-            LEFT JOIN rating r ON f.rating_id = r.rating_id
-            WHERE l1.user_id = ? AND l2.user_id = ?
-            """;
+        SELECT f.*, r.rating_name, g.genre_id
+        FROM likes l1
+        JOIN likes l2 ON l1.film_id = l2.film_id
+        JOIN film f ON l1.film_id = f.film_id
+        LEFT JOIN rating r ON f.rating_id = r.rating_id
+        LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+        LEFT JOIN genre g ON fg.genre_id = g.genre_id
+        WHERE l1.user_id = ? AND l2.user_id = ?
+    """;
+        List<Film> commonFilms = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Film film = filmRowMapper.mapRow(rs, rowNum);
+            Set<Genre> genres = new HashSet<>();
+            do {
+                Integer genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    Genre genre = new Genre();
+                    genre.setId(genreId);
+                    genres.add(genre);
+                }
+            } while (rs.next() && rs.getInt("film_id") == film.getId());
+            film.setGenres(genres);
+            return film;
+        }, userId, friendId);
+        return commonFilms.stream().toList();
 
-        List<Film> commonFilms = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
-
-        //жанры и лайки для общих фильмов
-        for (Film film : commonFilms) {
-            film.setLikes(getLikesByFilmId(film.getId()));
-            film.setGenres(getGenresByFilmId(film.getId()));
-        }
-
-        return commonFilms;
+//        String sql = """
+//            SELECT f.*, r.rating_name
+//            FROM likes l1
+//            JOIN likes l2 ON l1.film_id = l2.film_id
+//            JOIN film f ON l1.film_id = f.film_id
+//            LEFT JOIN rating r ON f.rating_id = r.rating_id
+//            WHERE l1.user_id = ? AND l2.user_id = ?
+//            """;
+//
+//        List<Film> commonFilms = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+//
+//        //жанры и лайки для общих фильмов
+//        for (Film film : commonFilms) {
+//            film.setLikes(getLikesByFilmId(film.getId()));
+//            film.setGenres(getGenresByFilmId(film.getId()));
+//        }
+//
+//        return commonFilms;
     }
 }
