@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,6 +119,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteUserById(Integer userId) {
+        List<User> friends = findAllFriends(userId);
+        for (User friend : friends) {
+            removeFriend(friend.getId(), userId);
+        }
+        String deleteFromFriendship = "DELETE FROM friendship WHERE user_id = ? OR friend_id = ?";
+        jdbcTemplate.update(deleteFromFriendship, userId, userId);
         jdbcTemplate.update(DELETE, userId);
     }
 }

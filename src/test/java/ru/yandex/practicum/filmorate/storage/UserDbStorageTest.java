@@ -164,6 +164,8 @@ class UserDbStorageTest {
         user3.setBirthday(LocalDate.of(1992, 3, 3));
         user3 = userDbStorage.create(user3);
 
+        userDbStorage.addFriend(user1.getId(), user3.getId());
+        List<User> friend1 = userDbStorage.findAllFriends(user1.getId());
         List<User> users = userDbStorage.getAllUsers();
 
         assertThat(users)
@@ -173,14 +175,26 @@ class UserDbStorageTest {
                 .contains(user2.getId())
                 .contains(user3.getId());
 
+        assertThat(friend1)
+                .hasSize(1)
+                .extracting(User::getId)
+                .contains(user3.getId());
+
         userDbStorage.deleteUserById(user3.getId());
         users = userDbStorage.getAllUsers();
+        friend1 = userDbStorage.findAllFriends(user1.getId());
+
 
         assertThat(users)
                 .hasSize(2)
                 .extracting(User::getId)
                 .contains(user1.getId())
                 .contains(user2.getId())
+                .doesNotContain(user3.getId());
+
+        assertThat(friend1)
+                .hasSize(0)
+                .extracting(User::getId)
                 .doesNotContain(user3.getId());
     }
 }

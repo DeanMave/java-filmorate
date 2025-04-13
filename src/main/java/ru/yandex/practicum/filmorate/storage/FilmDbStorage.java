@@ -372,9 +372,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteFilmById(Integer filmId) {
-        jdbcTemplate.update(DELETE, filmId);
         jdbcTemplate.update(DELETE_FILM_GENRE, filmId);
         jdbcTemplate.update(DELETE_FILM_DIRECTOR, filmId);
+        jdbcTemplate.update(DELETE, filmId);
+        findMostPopularFilms();
     }
 
     @Override
@@ -410,7 +411,6 @@ public class FilmDbStorage implements FilmStorage {
             film.setLikes(getLikesByFilmId(film.getId()));
             film.setGenres(getGenresByFilmId(film.getId()));
         }
-
         return commonFilms;
     }
 }
