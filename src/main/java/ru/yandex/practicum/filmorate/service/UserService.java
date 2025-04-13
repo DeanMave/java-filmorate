@@ -53,4 +53,13 @@ public class UserService {
         return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
     }
+
+    public void deleteUserById(Integer userId) {
+        userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
+        if (userStorage.getAllUsers().isEmpty()) {
+            throw new NotFoundException("Пользователи не найдены. Добавьте пользователей");
+        }
+        userStorage.deleteUserById(userId);
+    }
 }

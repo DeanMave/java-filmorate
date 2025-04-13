@@ -115,4 +115,9 @@ public class UserDbStorage implements UserStorage {
     public List<User> findAllFriends(Integer userId) {
         return jdbcTemplate.query(FIND_ALL_FRIENDS, userRowMapper, userId);
     }
+
+    @Override
+    public void deleteUserById(Integer userId) {
+        jdbcTemplate.update(DELETE, userId);
+    }
 }

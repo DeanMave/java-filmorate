@@ -45,6 +45,14 @@ public class FilmService {
         log.info("Пользователь {} убрал лайк у фильма {}", userId, film.getName());
     }
 
+    public void deleteFilmById(Integer filmId) {
+        getFilmByIdOrThrow(filmId);
+        if (filmStorage.getAllFilms().isEmpty()) {
+            throw new NotFoundException("Фильмы не найдены. Добавьте фильмы");
+        }
+        filmStorage.deleteFilmById(filmId);
+    }
+
     public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
         return filmStorage.getAllFilms().stream()
                 .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId().equals(genreId)))

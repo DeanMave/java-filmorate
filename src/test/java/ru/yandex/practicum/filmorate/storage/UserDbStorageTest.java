@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 
@@ -139,5 +141,48 @@ class UserDbStorageTest {
                 .hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("id", common.getId());
+    }
+
+    @Test
+    void deleteUserById() {
+        User user1 = new User();
+        user1.setName("User1");
+        user1.setLogin("login1");
+        user1.setEmail("u1@mail.com");
+        user1.setBirthday(LocalDate.of(1990, 1, 1));
+        user1 = userDbStorage.create(user1);
+
+        User user2 = new User();
+        user2.setName("User2");
+        user2.setLogin("login2");
+        user2.setEmail("u2@mail.com");
+        user2.setBirthday(LocalDate.of(1991, 2, 2));
+        user2 = userDbStorage.create(user2);
+
+        User user3 = new User();
+        user3.setName("User3");
+        user3.setLogin("login3");
+        user3.setEmail("u3@mail.com");
+        user3.setBirthday(LocalDate.of(1992, 3, 3));
+        user3 = userDbStorage.create(user3);
+
+        List<User> users = userDbStorage.getAllUsers();
+
+        assertThat(users)
+                .hasSize(6)
+                .extracting(User::getId)
+                .contains(user1.getId())
+                .contains(user2.getId())
+                .contains(user3.getId());
+
+        userDbStorage.deleteUserById(user3.getId());
+        users = userDbStorage.getAllUsers();
+
+        assertThat(users)
+                .hasSize(5)
+                .extracting(User::getId)
+                .contains(user1.getId())
+                .contains(user2.getId())
+                .doesNotContain(user3.getId());
     }
 }

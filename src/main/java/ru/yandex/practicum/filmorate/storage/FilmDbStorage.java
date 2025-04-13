@@ -371,6 +371,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(Integer filmId) {
+        jdbcTemplate.update(DELETE, filmId);
+        jdbcTemplate.update(DELETE_FILM_GENRE, filmId);
+        jdbcTemplate.update(DELETE_FILM_DIRECTOR, filmId);
+    }
+
+    @Override
     public Set<Integer> getLikesByFilmId(Integer filmId) {
         return new HashSet<>(jdbcTemplate.query(GET_LIKES_BY_FILM_ID,
                 (rs, rowNum) -> rs.getInt("user_id"), filmId));
