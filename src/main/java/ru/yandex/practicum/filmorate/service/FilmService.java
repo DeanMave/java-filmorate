@@ -36,6 +36,18 @@ public class FilmService {
         }
     }
 
+    public List<Film> searchFilm(String query, String by) {
+        if ("title".equalsIgnoreCase(by)) {
+            return filmStorage.searchByTitle(query);
+        } else if ("director".equalsIgnoreCase(by)) {
+            return filmStorage.searchByDirector(query);
+        } else if (("title,director".equalsIgnoreCase(by)) || "director,title".equalsIgnoreCase(by)) {
+            return filmStorage.searchByTitleAndDirector(query);
+        } else {
+            throw new IllegalArgumentException("Некорректный параметр: " + by);
+        }
+    }
+
     public void addLike(Integer filmId, Integer userId) {
         Film film = getFilmByIdOrThrow(filmId);
         userService.findUser(userId);

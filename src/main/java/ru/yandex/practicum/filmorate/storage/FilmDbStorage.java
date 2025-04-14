@@ -126,112 +126,83 @@ public class FilmDbStorage implements FilmStorage {
                 WHERE fd.director_id = ?
                 ORDER BY f.release_date ASC
             """;
+    private static final String FIND_FILM_BY_TITLE = """
+                SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                       f.rating_id, r.rating_name, COUNT(l.user_id) AS likes_count
+                FROM film AS f
+                JOIN rating AS r ON f.rating_id = r.rating_id
+                LEFT JOIN likes AS l ON f.film_id = l.film_id
+                WHERE LOWER(f.name) LIKE(CONCAT('%', ?, '%'))
+                GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.rating_id, r.rating_name
+                ORDER BY likes_count DESC
+            """;
+
+    private static final String FIND_FILM_BY_DIRECTOR = """
+                SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration,
+                       f.rating_id, r.rating_name, COUNT(l.user_id) AS likes_count
+                FROM film AS f
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN director d ON fd.director_id = d.director_id
+                JOIN rating AS r ON f.rating_id = r.rating_id
+                LEFT JOIN likes AS l ON f.film_id = l.film_id
+                WHERE LOWER(d.name) LIKE(CONCAT('%', ?, '%'))
+                GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.rating_id, r.rating_name
+                ORDER BY likes_count DESC
+            """;
+
+    private static final String FIND_FILM_BY_TITLE_DIRECTOR = """
+                SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                       f.rating_id, r.rating_name, COUNT(l.user_id) AS likes_count
+                FROM film AS f
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN director d ON fd.director_id = d.director_id
+                JOIN rating AS r ON f.rating_id = r.rating_id
+                LEFT JOIN likes AS l ON f.film_id = l.film_id
+                WHERE LOWER(d.name) LIKE(CONCAT('%', ?, '%'))
+                   OR LOWER(f.name) LIKE(CONCAT('%', ?, '%'))
+                GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.rating_id, r.rating_name
+                ORDER BY likes_count DESC
+            """;
 
     @Override
     public List<Film> getAllFilms() {
         List<Film> films = jdbcTemplate.query(FIND_ALL, filmRowMapper);
-        Map<Integer, Set<Genre>> filmGenres = new HashMap<>();
-        jdbcTemplate.query(FIND_GENRES_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Genre genre = new Genre();
-                    genre.setId(rs.getInt("genre_id"));
-                    genre.setName(rs.getString("name"));
-                    filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
-                });
-        Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
-        jdbcTemplate.query(FIND_LIKES_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(rs.getInt("user_id"));
-                });
-        Map<Integer, Set<Director>> filmDirectors = new HashMap<>();
-        jdbcTemplate.query(FIND_DIRECTOR_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Director director = new Director();
-                    director.setId(rs.getInt("director_id"));
-                    director.setName(rs.getString("name"));
-                    filmDirectors.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
-                });
-        for (Film film : films) {
-            int id = film.getId();
-            film.setGenres(filmGenres.getOrDefault(id, new HashSet<>()));
-            film.setLikes(filmLikes.getOrDefault(id, new HashSet<>()));
-            film.setDirectors(filmDirectors.getOrDefault(id, new HashSet<>()));
-        }
+        enrichFilm(films);
         return films;
     }
 
     @Override
     public List<Film> getFilmsByDirectorSortedByLikes(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_LIKES, filmRowMapper, directorId);
-        Map<Integer, Set<Genre>> filmGenres = new HashMap<>();
-        jdbcTemplate.query(FIND_GENRES_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Genre genre = new Genre();
-                    genre.setId(rs.getInt("genre_id"));
-                    genre.setName(rs.getString("name"));
-                    filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
-                });
-        Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
-        jdbcTemplate.query(FIND_LIKES_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(rs.getInt("user_id"));
-                });
-        Map<Integer, Set<Director>> filmDirectors = new HashMap<>();
-        jdbcTemplate.query(FIND_DIRECTOR_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Director director = new Director();
-                    director.setId(rs.getInt("director_id"));
-                    director.setName(rs.getString("name"));
-                    filmDirectors.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
-                });
-        for (Film film : films) {
-            int id = film.getId();
-            film.setGenres(filmGenres.getOrDefault(id, new HashSet<>()));
-            film.setLikes(filmLikes.getOrDefault(id, new HashSet<>()));
-            film.setDirectors(filmDirectors.getOrDefault(id, new HashSet<>()));
-        }
+        enrichFilm(films);
         return films;
     }
 
     @Override
     public List<Film> getFilmsByDirectorSortedByYears(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_YEARS, filmRowMapper, directorId);
-        Map<Integer, Set<Genre>> filmGenres = new HashMap<>();
-        jdbcTemplate.query(FIND_GENRES_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Genre genre = new Genre();
-                    genre.setId(rs.getInt("genre_id"));
-                    genre.setName(rs.getString("name"));
-                    filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
-                });
-        Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
-        jdbcTemplate.query(FIND_LIKES_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(rs.getInt("user_id"));
-                });
-        Map<Integer, Set<Director>> filmDirectors = new HashMap<>();
-        jdbcTemplate.query(FIND_DIRECTOR_OF_FILMS,
-                (rs) -> {
-                    int filmId = rs.getInt("film_id");
-                    Director director = new Director();
-                    director.setId(rs.getInt("director_id"));
-                    director.setName(rs.getString("name"));
-                    filmDirectors.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
-                });
-        for (Film film : films) {
-            int id = film.getId();
-            film.setGenres(filmGenres.getOrDefault(id, new HashSet<>()));
-            film.setLikes(filmLikes.getOrDefault(id, new HashSet<>()));
-            film.setDirectors(filmDirectors.getOrDefault(id, new HashSet<>()));
-        }
+        enrichFilm(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByTitle(String query) {
+        List<Film> films = jdbcTemplate.query(FIND_FILM_BY_TITLE, filmRowMapper, query.toLowerCase());
+        enrichFilm(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByDirector(String query) {
+        List<Film> films = jdbcTemplate.query(FIND_FILM_BY_DIRECTOR, filmRowMapper, query.toLowerCase());
+        enrichFilm(films);
+        return films;
+    }
+
+    @Override
+    public List<Film> searchByTitleAndDirector(String query) {
+        List<Film> films = jdbcTemplate.query(FIND_FILM_BY_TITLE_DIRECTOR, filmRowMapper, query.toLowerCase(), query.toLowerCase());
+        enrichFilm(films);
         return films;
     }
 
@@ -397,15 +368,15 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId) {
         String sql = """
-        SELECT f.*, r.rating_name, g.genre_id
-        FROM likes l1
-        JOIN likes l2 ON l1.film_id = l2.film_id
-        JOIN film f ON l1.film_id = f.film_id
-        LEFT JOIN rating r ON f.rating_id = r.rating_id
-        LEFT JOIN film_genre fg ON f.film_id = fg.film_id
-        LEFT JOIN genre g ON fg.genre_id = g.genre_id
-        WHERE l1.user_id = ? AND l2.user_id = ?
-    """;
+                    SELECT f.*, r.rating_name, g.genre_id
+                    FROM likes l1
+                    JOIN likes l2 ON l1.film_id = l2.film_id
+                    JOIN film f ON l1.film_id = f.film_id
+                    LEFT JOIN rating r ON f.rating_id = r.rating_id
+                    LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                    LEFT JOIN genre g ON fg.genre_id = g.genre_id
+                    WHERE l1.user_id = ? AND l2.user_id = ?
+                """;
         List<Film> commonFilms = jdbcTemplate.query(sql, (rs, rowNum) -> {
             Film film = filmRowMapper.mapRow(rs, rowNum);
             Set<Genre> genres = new HashSet<>();
@@ -419,7 +390,43 @@ public class FilmDbStorage implements FilmStorage {
             } while (rs.next() && rs.getInt("film_id") == film.getId());
             film.setGenres(genres);
             return film;
-}, userId, friendId);
+        }, userId, friendId);
         return commonFilms.stream().toList();
+    }
+
+    private void enrichFilm(List<Film> films) {
+        Map<Integer, Set<Genre>> filmGenres = new HashMap<>();
+        jdbcTemplate.query(FIND_GENRES_FILMS,
+                (rs) -> {
+                    int filmId = rs.getInt("film_id");
+                    Genre genre = new Genre();
+                    genre.setId(rs.getInt("genre_id"));
+                    genre.setName(rs.getString("name"));
+                    filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+                });
+
+        Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
+        jdbcTemplate.query(FIND_LIKES_OF_FILMS,
+                (rs) -> {
+                    int filmId = rs.getInt("film_id");
+                    filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(rs.getInt("user_id"));
+                });
+
+        Map<Integer, Set<Director>> filmDirectors = new HashMap<>();
+        jdbcTemplate.query(FIND_DIRECTOR_OF_FILMS,
+                (rs) -> {
+                    int filmId = rs.getInt("film_id");
+                    Director director = new Director();
+                    director.setId(rs.getInt("director_id"));
+                    director.setName(rs.getString("name"));
+                    filmDirectors.computeIfAbsent(filmId, k -> new HashSet<>()).add(director);
+                });
+
+        for (Film film : films) {
+            int id = film.getId();
+            film.setGenres(filmGenres.getOrDefault(id, new HashSet<>()));
+            film.setLikes(filmLikes.getOrDefault(id, new HashSet<>()));
+            film.setDirectors(filmDirectors.getOrDefault(id, new HashSet<>()));
         }
+    }
 }
