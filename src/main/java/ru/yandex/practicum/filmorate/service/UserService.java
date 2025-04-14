@@ -66,4 +66,9 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден."));
         return eventDbStorage.getEventFeed(user.getId());
     }
+    public void deleteUserById(Integer userId) {
+        findUser(userId);
+        userStorage.deleteUserById(userId);
+        log.info("Пользователь {} удалён", userId);
+    }
 }

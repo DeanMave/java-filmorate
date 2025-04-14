@@ -36,6 +36,11 @@ public class UserController {
         return userStorage.getAllUsers();
     }
 
+    @GetMapping("/{id}")
+    public User findUserById(@PathVariable Integer id) {
+        return userService.findUser(id);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userStorage.create(user);
@@ -59,5 +64,10 @@ public class UserController {
     @GetMapping("/{id}/feed")
     public List<Event> getFeed(@PathVariable("id") Integer userId) {
         return userService.getEventFeed(userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable Integer id) {
+        userService.deleteUserById(id);
     }
 }

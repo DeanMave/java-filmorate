@@ -52,6 +52,12 @@ public class FilmService {
         eventDbStorage.addEvent(EventType.LIKE, Operation.REMOVE, userId, filmId);
     }
 
+    public void deleteFilmById(Integer filmId) {
+        getFilmByIdOrThrow(filmId);
+        filmStorage.deleteFilmById(filmId);
+        log.info("Фильм {} удален", filmId);
+    }
+
     public List<Film> mostPopularFilms(int size, Integer genreId, Integer year) {
         return filmStorage.getAllFilms().stream()
                 .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId().equals(genreId)))
