@@ -24,7 +24,8 @@ public class DirectorDbStorage implements DirectorStorage {
     private static String FIND_ALL_DIRECTORS = "SELECT * FROM director";
     private static String FIND_DIRECTOR_BY_ID = "SELECT * FROM director WHERE director_id = ?";
     private static String UPDATE = "UPDATE director SET name = ? WHERE director_id = ?";
-    private static String DELETE = "DELETE FROM director WHERE director_id = ?";
+    private static final String DELETE_DIRECTOR_FILM_LINKS = "DELETE FROM film_director WHERE director_id = ?";
+    private static String DELETE_DIRECTOR = "DELETE FROM director WHERE director_id = ?";
     private static final String INSERT_NEW_DIRECTOR = "INSERT INTO director(name) " +
                                                       "VALUES (?)";
 
@@ -72,6 +73,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public void deleteDirector(Integer id) {
-        jdbcTemplate.update(DELETE, id);
+        jdbcTemplate.update(DELETE_DIRECTOR_FILM_LINKS, id);
+        jdbcTemplate.update(DELETE_DIRECTOR, id);
     }
 }

@@ -19,6 +19,7 @@ import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Component
@@ -38,8 +39,9 @@ public class FilmDbStorage implements FilmStorage {
     private static final String FIND_GENRES_FILM_BY_ID = """
             SELECT g.genre_id, g.name
             FROM film_genre AS fg
-            JOIN genre AS g ON fg.genre_id = g.genre_ID
+            JOIN genre AS g ON fg.genre_id = g.genre_id
             WHERE fg.film_id = ?
+            ORDER BY g.genre_id
             """;
     private static final String FIND_DIRECTORS_FILM_BY_ID = """
             SELECT d.director_id, d.name
@@ -174,6 +176,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirectorSortedByLikes(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_LIKES, filmRowMapper, directorId);
+        if (films.isEmpty()) {
+            throw new NotFoundException("Фильмы с режиссёром id=" + directorId + " не найдены.");
+        }
         enrichFilm(films);
         return films;
     }
@@ -181,6 +186,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsByDirectorSortedByYears(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_YEARS, filmRowMapper, directorId);
+        if (films.isEmpty()) {
+            throw new NotFoundException("Фильмы с режиссёром id=" + directorId + " не найдены.");
+        }
         enrichFilm(films);
         return films;
     }
@@ -227,18 +235,19 @@ public class FilmDbStorage implements FilmStorage {
         if (key != null) {
             film.setId(key.intValue());
             if (film.getGenres() != null) {
+                List<Genre> genreList = new ArrayList<>(film.getGenres()); // без сортировки!
                 jdbcTemplate.batchUpdate(INSERT_FILM_GENRE,
                         new BatchPreparedStatementSetter() {
                             @Override
                             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                Genre genre = new ArrayList<>(film.getGenres()).get(i);
+                                Genre genre = genreList.get(i);
                                 ps.setInt(1, film.getId());
                                 ps.setInt(2, genre.getId());
                             }
 
                             @Override
                             public int getBatchSize() {
-                                return film.getGenres().size();
+                                return genreList.size();
                             }
                         }
                 );
@@ -275,11 +284,14 @@ public class FilmDbStorage implements FilmStorage {
         }
         jdbcTemplate.update(DELETE_FILM_GENRE, newFilm.getId());
         if (newFilm.getGenres() != null) {
+            List<Genre> sortedGenres = newFilm.getGenres().stream()
+                    .sorted(Comparator.comparing(Genre::getId))
+                    .collect(Collectors.toList());
             jdbcTemplate.batchUpdate(UPDATE_FILM_GENRE,
                     new BatchPreparedStatementSetter() {
                         @Override
                         public void setValues(PreparedStatement ps, int i) throws SQLException {
-                            Genre genre = new ArrayList<>(newFilm.getGenres()).get(i);
+                            Genre genre = sortedGenres.get(i);
                             ps.setInt(1, newFilm.getId());
                             ps.setInt(2, genre.getId());
                         }
@@ -308,7 +320,8 @@ public class FilmDbStorage implements FilmStorage {
                         }
                     });
         }
-        return newFilm;
+        return findById(newFilm.getId()).orElseThrow(() ->
+                new NotFoundException("Не удалось найти обновлённый фильм с id " + newFilm.getId()));
     }
 
     @Override
@@ -357,7 +370,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Set<Genre> getGenresByFilmId(Integer filmId) {
-        return new HashSet<>(jdbcTemplate.query(FIND_GENRES_FILM_BY_ID, genreRowMapper, filmId));
+        List<Genre> genres = jdbcTemplate.query(
+                FIND_GENRES_FILM_BY_ID,
+                genreRowMapper,
+                filmId
+        );
+        genres.sort(Comparator.comparing(Genre::getId));
+        return new LinkedHashSet<>(genres);
     }
 
     @Override

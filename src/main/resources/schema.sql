@@ -91,8 +91,7 @@ CREATE TABLE IF NOT EXISTS review_dislikes (
    PRIMARY KEY (review_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS event
-(
+CREATE TABLE IF NOT EXISTS event (
 	timestamp BIGINT,
 	user_id   INTEGER REFERENCES users(user_id),
 	eventType varchar(15) NOT NULL,

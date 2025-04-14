@@ -17,7 +17,7 @@ public class RecommendationService {
     }
 
     public List<Film> getRecommendedFilms(Integer userId) {
-        userService.findUser(userId); // Проверка существования пользователя
+        userService.findUser(userId);
         return recommendationStorage.getRecommendedFilms(userId);
     }
 }

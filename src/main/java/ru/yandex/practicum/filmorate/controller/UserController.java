@@ -47,7 +47,12 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userStorage.create(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            return userStorage.create(user);
+        } else {
+            return userStorage.create(user);
+        }
     }
 
     @PutMapping
