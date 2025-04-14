@@ -177,7 +177,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getFilmsByDirectorSortedByLikes(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_LIKES, filmRowMapper, directorId);
         if (films.isEmpty()) {
-            throw new NotFoundException("Фильмы с режиссёром id=" + directorId + " не найдены.");
+            throw new NotFoundException("Фильмы с режиссёром id= " + directorId + " не найдены.");
         }
         enrichFilm(films);
         return films;
@@ -187,7 +187,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getFilmsByDirectorSortedByYears(Integer directorId) {
         List<Film> films = jdbcTemplate.query(FIND_FILMS_BY_DIRECTOR_YEARS, filmRowMapper, directorId);
         if (films.isEmpty()) {
-            throw new NotFoundException("Фильмы с режиссёром id=" + directorId + " не найдены.");
+            throw new NotFoundException("Фильмы с режиссёром id= " + directorId + " не найдены.");
         }
         enrichFilm(films);
         return films;
