@@ -28,8 +28,9 @@ public class ReviewService {
     public Review addReview(Review review) {
         userService.findUser(review.getUserId());
         filmService.getFilmByIdOrThrow(review.getFilmId());
-        eventDbStorage.addEvent(EventType.REVIEW, Operation.ADD, review.getUserId(), review.getReviewId());
-        return reviewStorage.addReview(review);
+        Review newReview = reviewStorage.addReview(review);
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.ADD, review.getUserId(), newReview.getReviewId());
+        return newReview;
     }
 
     public Review updateReview(Review review) {
