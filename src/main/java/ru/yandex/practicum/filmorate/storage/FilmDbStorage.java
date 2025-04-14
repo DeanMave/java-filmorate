@@ -138,11 +138,11 @@ public class FilmDbStorage implements FilmStorage {
             """;
 
     private static final String FIND_FILM_BY_DIRECTOR = """
-                SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
+                SELECT DISTINCT f.film_id, f.name, f.description, f.release_date, f.duration,
                        f.rating_id, r.rating_name, COUNT(l.user_id) AS likes_count
                 FROM film AS f
-                JOIN film_director AS fd ON f.film_id = fd.film_id
-                JOIN director AS d ON fd.director_id = d.director_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN director d ON fd.director_id = d.director_id
                 JOIN rating AS r ON f.rating_id = r.rating_id
                 LEFT JOIN likes AS l ON f.film_id = l.film_id
                 WHERE LOWER(d.name) LIKE(CONCAT('%', ?, '%'))
@@ -154,8 +154,8 @@ public class FilmDbStorage implements FilmStorage {
                 SELECT f.film_id, f.name, f.description, f.release_date, f.duration,
                        f.rating_id, r.rating_name, COUNT(l.user_id) AS likes_count
                 FROM film AS f
-                JOIN film_director AS fd ON f.film_id = fd.film_id
-                JOIN director AS d ON fd.director_id = d.director_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN director d ON fd.director_id = d.director_id
                 JOIN rating AS r ON f.rating_id = r.rating_id
                 LEFT JOIN likes AS l ON f.film_id = l.film_id
                 WHERE LOWER(d.name) LIKE(CONCAT('%', ?, '%'))
