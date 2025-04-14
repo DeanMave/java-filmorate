@@ -235,19 +235,21 @@ public class FilmDbStorage implements FilmStorage {
         if (key != null) {
             film.setId(key.intValue());
             if (film.getGenres() != null) {
-                List<Genre> genreList = new ArrayList<>(film.getGenres()); // без сортировки!
+                List<Genre> sorted = new ArrayList<>(film.getGenres());
+                sorted.sort(Comparator.comparing(Genre::getId));
+                film.setGenres(new LinkedHashSet<>(sorted));
                 jdbcTemplate.batchUpdate(INSERT_FILM_GENRE,
                         new BatchPreparedStatementSetter() {
                             @Override
                             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                                Genre genre = genreList.get(i);
+                                Genre genre = sorted.get(i);
                                 ps.setInt(1, film.getId());
                                 ps.setInt(2, genre.getId());
                             }
 
                             @Override
                             public int getBatchSize() {
-                                return genreList.size();
+                                return sorted.size();
                             }
                         }
                 );
