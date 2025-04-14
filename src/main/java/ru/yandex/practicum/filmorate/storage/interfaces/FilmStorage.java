@@ -33,5 +33,7 @@ public interface FilmStorage {
 
     Set<Director> getDirectorsByFilmId(Integer filmId);
 
-    public List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId);
+    List<Film> getCommonFilmsWithFriend(Integer userId, Integer friendId);
+
+    void deleteFilmById(Integer userId);
 }
