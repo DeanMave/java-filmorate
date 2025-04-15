@@ -37,7 +37,7 @@ public class ReviewService {
         Review existing = getReviewOrThrow(review.getReviewId());
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
-        eventDbStorage.addEvent(EventType.REVIEW, Operation.UPDATE, review.getUserId(), review.getReviewId());
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.UPDATE, existing.getUserId(), existing.getReviewId());
         return reviewStorage.updateReview(existing);
     }
 
