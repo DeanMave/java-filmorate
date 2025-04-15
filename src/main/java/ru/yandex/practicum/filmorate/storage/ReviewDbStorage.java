@@ -47,13 +47,13 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> getFilmReviews(Integer filmId) {
+    public List<Review> getFilmReviews(Integer filmId, Integer count) {
         String sql = "SELECT r.review_id, r.film_id, r.user_id, r.content, r.is_positive, " +
                 "(SELECT COUNT(*) FROM review_likes WHERE review_id = r.review_id) - " +
                 "(SELECT COUNT(*) FROM review_dislikes WHERE review_id = r.review_id) AS useful " +
                 "FROM reviews r " +
-                "WHERE r.film_id = ?";
-        return jdbcTemplate.query(sql, reviewRowMapper, filmId);
+                "WHERE r.film_id = ? LIMIT ?";
+        return jdbcTemplate.query(sql, reviewRowMapper, filmId, count);
     }
 
     @Override

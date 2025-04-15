@@ -6,8 +6,8 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.Operation;
-import ru.yandex.practicum.filmorate.storage.interfaces.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.ReviewStorage;
 
 import java.util.List;
 
@@ -51,9 +51,9 @@ public class ReviewService {
         return getReviewOrThrow(id);
     }
 
-    public List<Review> getFilmReviews(Integer filmId) {
+    public List<Review> getFilmReviews(Integer filmId, Integer count) {
         filmService.getFilmByIdOrThrow(filmId);
-        return reviewStorage.getFilmReviews(filmId);
+        return reviewStorage.getFilmReviews(filmId, count);
     }
 
     public List<Review> getUserReviews(Integer userId) {
