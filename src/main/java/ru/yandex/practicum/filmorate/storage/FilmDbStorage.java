@@ -54,7 +54,7 @@ public class FilmDbStorage implements FilmStorage {
             FROM film_genre fg
             JOIN genre g ON fg.genre_id = g.genre_id
             """;
-    private static final String ADD_LIKE_FILM = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+    private static final String ADD_LIKE_FILM = "MERGE INTO likes (film_id, user_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_FILM = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
     private static final String GET_LIKES_BY_FILM_ID = "SELECT user_id FROM likes WHERE film_id = ?";
     private static final String FIND_LIKES_OF_FILMS = """

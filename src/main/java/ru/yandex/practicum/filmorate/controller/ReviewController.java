@@ -32,7 +32,7 @@ public class ReviewController {
             @RequestParam(defaultValue = "10") int count
     ) {
         if (filmId != null) {
-            return reviewService.getFilmReviews(filmId);
+            return reviewService.getFilmReviews(filmId, count);
         }
         return reviewService.getAllReviews(count);
     }
