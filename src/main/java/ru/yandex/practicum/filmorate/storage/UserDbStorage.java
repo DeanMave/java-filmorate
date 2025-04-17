@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -18,18 +18,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
-@Component
+@Repository
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper;
     private static final String INSERT_QUERY = "INSERT INTO users(name, login, email,birthday) " +
-            "VALUES (?, ?, ?, ?)";
+                                               "VALUES (?, ?, ?, ?)";
     private static final String FIND_ALL = "SELECT * FROM users";
     private static final String FIND_BY_ID = "SELECT * FROM users where user_id = ?";
     private static final String DELETE = "DELETE FROM users WHERE user_id = ?";
     private static final String UPDATE = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE user_id = ?";
     private static final String INSERT_FRIEND = "INSERT INTO friendship(user_id,friend_id,status) " +
-            "VALUES (?, ?, ?)";
+                                                "VALUES (?, ?, ?)";
     private static final String DELETE_FRIEND = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
     private static final String FIND_COMMON_FRIENDS = """
             SELECT u.user_id, u.name, u.email, u.login, u.birthday
@@ -114,5 +114,14 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAllFriends(Integer userId) {
         return jdbcTemplate.query(FIND_ALL_FRIENDS, userRowMapper, userId);
+    }
+
+    @Override
+    public void deleteUserById(Integer userId) {
+        String deleteFromFriendship = "DELETE FROM friendship WHERE user_id = ? OR friend_id = ?";
+        String deleteFromEvent = "DELETE FROM event WHERE user_id = ?";
+        jdbcTemplate.update(deleteFromFriendship, userId, userId);
+        jdbcTemplate.update(deleteFromEvent, userId);
+        jdbcTemplate.update(DELETE, userId);
     }
 }

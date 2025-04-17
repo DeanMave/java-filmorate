@@ -21,4 +21,6 @@ public interface UserStorage {
     List<User> findCommonFriends(Integer userId,Integer friendId);
 
     List<User> findAllFriends(Integer userId);
+
+    void deleteUserById(Integer userId);
 }

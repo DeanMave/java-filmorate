@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
@@ -14,10 +17,12 @@ import java.util.List;
 public class UserController {
     private final UserDbStorage userStorage;
     private final UserService userService;
+    private final RecommendationService recommendationService;
 
-    public UserController(UserDbStorage userStorage, UserService userService) {
+    public UserController(UserDbStorage userStorage, UserService userService, RecommendationService recommendationService) {
         this.userStorage = userStorage;
         this.userService = userService;
+        this.recommendationService = recommendationService;
     }
 
     @GetMapping("/{id}/friends")
@@ -35,9 +40,19 @@ public class UserController {
         return userStorage.getAllUsers();
     }
 
+    @GetMapping("/{id}")
+    public User findUserById(@PathVariable Integer id) {
+        return userService.findUser(id);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userStorage.create(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            return userStorage.create(user);
+        } else {
+            return userStorage.create(user);
+        }
     }
 
     @PutMapping
@@ -53,5 +68,20 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
         userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable("id") Integer userId) {
+        return userService.getEventFeed(userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable Integer id) {
+        userService.deleteUserById(id);
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Integer userId) {
+        return recommendationService.getRecommendedFilms(userId);
     }
 }
