@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
@@ -8,8 +10,10 @@ import ru.yandex.practicum.filmorate.storage.DirectorDbStorage;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/directors")
+@Validated
 public class DirectorController {
     private final DirectorDbStorage directorStorage;
     private final DirectorService directorService;
@@ -25,7 +29,7 @@ public class DirectorController {
     }
 
     @GetMapping("/{id}")
-    public Director getDirectorById(@PathVariable Integer id) {
+    public Director getDirectorById(@PathVariable @Positive Integer id) {
         return directorService.getDirectorByIdOrThrow(id);
     }
 

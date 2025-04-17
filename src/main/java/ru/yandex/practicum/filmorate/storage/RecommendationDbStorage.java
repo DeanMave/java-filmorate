@@ -57,20 +57,15 @@ public class RecommendationDbStorage implements RecommendationStorage {
                      "JOIN genre g ON fg.genre_id = g.genre_id " +
                      "WHERE fg.film_id IN (%s)";
 
-        String inSql = films.stream()
-                .map(f -> "?")
-                .collect(Collectors.joining(", "));
+        String inSql = films.stream().map(f -> "?").collect(Collectors.joining(", "));
         String finalSql = String.format(sql, inSql);
-
         Object[] params = films.stream().map(Film::getId).toArray();
 
         Map<Integer, Set<Genre>> result = new HashMap<>();
 
         jdbcTemplate.query(finalSql, params, rs -> {
             int filmId = rs.getInt("film_id");
-            Genre genre = new Genre();
-            genre.setId(rs.getInt("genre_id"));
-            genre.setName(rs.getString("name"));
+            Genre genre = genreRowMapper.mapRow(rs, rs.getRow());
             result.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
         });
 

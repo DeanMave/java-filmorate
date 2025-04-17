@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.Data;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.interfaces.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.RatingRowMapper;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
-@Component
+@Repository
 public class RatingDbStorage implements RatingStorage {
     private final JdbcTemplate jdbcTemplate;
     private final RatingRowMapper ratingRowMapper;

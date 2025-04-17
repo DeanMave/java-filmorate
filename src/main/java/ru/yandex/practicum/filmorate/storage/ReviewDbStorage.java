@@ -4,7 +4,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.interfaces.ReviewStorage;
@@ -134,7 +133,6 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    @Transactional
     public void addDislike(Integer reviewId, Integer userId) {
         String sql = "MERGE INTO review_dislikes (review_id, user_id) KEY(review_id, user_id) VALUES (?, ?)";
         if (existsLike(reviewId, userId)) {
